@@ -1,0 +1,13 @@
+# Editor and OS files
+*.swp
+*.swo
+*~
+.DS_Store
+.idea/
+.vscode/
+
+# Local scratch
+*.log
+*.tmp
+*.bak
+/tmp/

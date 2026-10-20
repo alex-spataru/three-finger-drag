@@ -24,11 +24,14 @@ one-finger click-and-drag.
   Wayland) on Fedora Asahi Remix 44 with an Apple Silicon MacBook Pro
   touchpad.
 
-To check whether your compositor loads plugins:
+To check whether KWin was built against a libinput with plugin support:
 
 ```sh
 nm -D /usr/lib64/libkwin.so.6 | grep libinput_plugin_system_load_plugins
 ```
+
+On Debian-based distributions the library lives under
+`/usr/lib/<arch>-linux-gnu/` instead of `/usr/lib64/`.
 
 ## Install
 
@@ -38,7 +41,8 @@ curl -fsSL https://raw.githubusercontent.com/alex-spataru/three-finger-drag/main
 
 Then **log out and back in**. The installer asks for your `sudo` password and
 copies the plugin to `/etc/libinput/plugins/50-three-finger-drag.lua`. Running it
-again updates an existing install.
+again updates an existing install. Set `THREE_FINGER_DRAG_REF` to install from
+a branch or tag other than `main`.
 
 From a clone:
 
@@ -61,21 +65,28 @@ Then log out and back in. You can also remove it by hand with
 
 | Gesture | Result |
 |---|---|
-| Three fingers down and moving | Left-button drag |
-| Lift all fingers | Drag ends after 50 ms; fingers placed back down within that window continue the drag |
+| Three fingers down and moving | Left-button drag, driven by the finger highest on the pad |
+| Lift some fingers | Drag continues with whichever finger is still down |
+| Lift all fingers | Drag ends after 50 ms. If the fingers were still moving, or lifted at the pad edge, the window is 250 ms instead so you can land again and keep dragging |
+| Place fingers back down in that window | Drag continues |
 | Physical click during a drag | Takes over the drag; releasing the click ends it |
 | Three-finger tap without movement | Middle click (unchanged) |
 | Four- and five-finger swipes | Unchanged |
-| Three-finger swipes | **Replaced by drag**: compositor shortcuts bound to three-finger swipes no longer fire |
+| Three-finger swipes | **Replaced by drag**: compositor shortcuts bound to three-finger swipes no longer fire. Rebind them to four fingers, which is what macOS does when the option is on |
 
 ## Tuning
 
-Two constants at the top of `50-three-finger-drag.lua` control the feel:
+Constants at the top of `50-three-finger-drag.lua` control the feel:
 
 | Constant | Default | Meaning |
 |---|---|---|
 | `THRESHOLD_MM` | `1.5` | How far the fingers must move before a drag starts. Lower values feel more eager, higher values make three-finger taps more forgiving. |
-| `RELEASE_MS` | `50` | How long the button stays held after lifting. Raise it (e.g. `400`) to be able to lift and reposition your fingers mid-drag. |
+| `ARM_MS` | `30` | Three fingers must be down this long before a drag can start, so a fast four-finger swipe whose fourth finger lands late is not mistaken for a drag. |
+| `RELEASE_MS` | `50` | How long the button stays held after a still lift. |
+| `REPOSITION_MS` | `250` | How long it stays held after a lift that looks like a mid-stroke reposition. Set it equal to `RELEASE_MS` to disable the adaptive behavior. |
+| `REPOSITION_MM_S` | `25` | Finger speed at lift above which the lift counts as a reposition. |
+| `EDGE_MM` | `5` | Lifts closer than this to the pad edge count as repositions. |
+| `SPEED_WINDOW_MS` | `60` | Window over which the lift speed is measured. |
 
 Edit `/etc/libinput/plugins/50-three-finger-drag.lua` and log out and back in.
 Running the installer again overwrites your edits.
@@ -98,6 +109,23 @@ libinput 1.31.3, `--set-plugin-path` ignores its argument.
 
 If the plugin loads in `debug-events` but does nothing on the desktop, your
 compositor probably doesn't load libinput plugins.
+
+Plugin errors show up as `plugin bug: ...` in the `--verbose` output, after
+which libinput unloads the plugin for the rest of the session.
+
+## Development
+
+The plugin can be exercised offline with LuaJIT. `tests/run.lua` stubs the
+libinput plugin API, feeds synthetic evdev frames through the plugin and
+checks the frames it emits:
+
+```sh
+luajit tests/run.lua
+```
+
+The same tests, plus `shellcheck` on the scripts, run in CI on every push.
+Feel on real hardware still has to be checked with the `debug-events` command
+above or after a re-login.
 
 ## License
 

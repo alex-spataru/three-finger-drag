@@ -13,26 +13,31 @@ DEST_DIR="/etc/libinput/plugins"
 info() { printf '\033[1;34m::\033[0m %s\n' "$*"; }
 die()  { printf '\033[1;31merror:\033[0m %s\n' "$*" >&2; exit 1; }
 
+as_root() {
+  if [ "$(id -u)" -eq 0 ]; then
+    "$@"
+  else
+    sudo "$@"
+  fi
+}
+
 main() {
   if [ ! -f "$DEST_DIR/$PLUGIN" ]; then
-    info "three-finger drag is not installed, nothing to do."
+    info "three-finger drag is not installed, nothing to do"
     exit 0
   fi
-
-  local sudo=""
   if [ "$(id -u)" -ne 0 ]; then
     command -v sudo >/dev/null 2>&1 || die "run as root or install sudo"
-    sudo="sudo"
   fi
 
   info "removing $DEST_DIR/$PLUGIN"
-  $sudo rm -f "$DEST_DIR/$PLUGIN"
+  as_root rm -f "$DEST_DIR/$PLUGIN"
 
-  # Only remove the directory if nothing else lives there
-  $sudo rmdir "$DEST_DIR" 2>/dev/null || true
+  # The directory is only removed when nothing else lives there.
+  as_root rmdir "$DEST_DIR" 2>/dev/null || true
 
   echo
-  info "three-finger drag removed."
+  info "three-finger drag removed"
   echo "   Log out and back in to restore the default touchpad behavior."
 }
 

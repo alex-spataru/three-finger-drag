@@ -1,5 +1,7 @@
 # three-finger-drag
 
+[![CI](https://github.com/alex-spataru/three-finger-drag/actions/workflows/ci.yml/badge.svg)](https://github.com/alex-spataru/three-finger-drag/actions/workflows/ci.yml)
+
 macOS-style three-finger drag for Linux touchpads, implemented as a
 [libinput Lua plugin](https://wayland.freedesktop.org/libinput/doc/latest/lua-plugins.html).
 

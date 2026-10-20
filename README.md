@@ -1,13 +1,16 @@
-# three-finger-drag
+# Three-Finger Drag for Linux Touchpads
 
 [![CI](https://github.com/alex-spataru/three-finger-drag/actions/workflows/ci.yml/badge.svg)](https://github.com/alex-spataru/three-finger-drag/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-macOS-style three-finger drag for Linux touchpads, implemented as a
-[libinput Lua plugin](https://wayland.freedesktop.org/libinput/doc/latest/lua-plugins.html).
+**Drag windows, text and files with three fingers, the macOS way, on any
+Wayland desktop that loads libinput plugins. No compositor support needed.**
 
-Put three fingers on the touchpad and move them to drag windows, select text or
-move files, the same way the macOS accessibility option works. Lift your fingers
-to drop.
+Put three fingers on the touchpad and move them to drag. Lift to drop. It
+works exactly like the macOS accessibility option, and it is implemented as a
+single-file
+[libinput Lua plugin](https://wayland.freedesktop.org/libinput/doc/latest/lua-plugins.html)
+that installs with one command.
 
 ## Why a plugin?
 
